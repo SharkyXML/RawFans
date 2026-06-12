@@ -121,14 +121,14 @@
         </div>
       </header>
 
-      <main class="page-content">
+      <main class="page-content content-page">
 
-        <div class="page-header">
+        <div class="page-header flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6 md:mb-8">
           <div class="page-header-text">
-            <h2>Content Bibliothek</h2>
-            <p>Alle Designs, Animationen, Prompts und Content-Ideen zentral organisiert — für dein Team jederzeit abrufbar.</p>
+            <h2 class="text-2xl md:text-[28px]">Content Bibliothek</h2>
+            <p class="text-sm md:text-base max-w-xl">Alle Designs, Animationen, Prompts und Content-Ideen zentral organisiert — für dein Team jederzeit abrufbar.</p>
           </div>
-          <button class="btn btn-primary" id="add-content-btn">
+          <button class="btn btn-primary w-full sm:w-auto shrink-0 min-h-[44px]" id="add-content-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
@@ -136,41 +136,41 @@
           </button>
         </div>
 
-        <div class="content-toolbar">
-          <div class="filter-search">
+        <div class="content-toolbar flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5 md:mb-7">
+          <div class="filter-search w-full sm:flex-1 sm:max-w-md min-w-0">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
             </svg>
             <input type="text" id="content-search" placeholder="Titel, Beschreibung oder Prompt suchen…" autocomplete="off">
           </div>
-          <span class="content-count" id="content-count"></span>
+          <span class="content-count shrink-0" id="content-count"></span>
         </div>
 
-        <div class="content-tabs" id="content-tabs" role="tablist">
-          <button class="content-tab active" data-category="all" role="tab">
+        <div class="content-tabs flex w-full overflow-x-auto -mx-1 px-1 pb-1 mb-5 md:mb-6" id="content-tabs" role="tablist">
+          <button class="content-tab active shrink-0" data-category="all" role="tab">
             Alle <span class="content-tab-count" data-count="all">0</span>
           </button>
-          <button class="content-tab" data-category="instagram" role="tab">
+          <button class="content-tab shrink-0" data-category="instagram" role="tab">
             Instagram Posts <span class="content-tab-count" data-count="instagram">0</span>
           </button>
-          <button class="content-tab" data-category="reels" role="tab">
+          <button class="content-tab shrink-0" data-category="reels" role="tab">
             Reels / Animationen <span class="content-tab-count" data-count="reels">0</span>
           </button>
-          <button class="content-tab" data-category="gemini" role="tab">
+          <button class="content-tab shrink-0" data-category="gemini" role="tab">
             Gemini Prompts <span class="content-tab-count" data-count="gemini">0</span>
           </button>
-          <button class="content-tab" data-category="canva" role="tab">
+          <button class="content-tab shrink-0" data-category="canva" role="tab">
             Canva Templates <span class="content-tab-count" data-count="canva">0</span>
           </button>
-          <button class="content-tab" data-category="video" role="tab">
+          <button class="content-tab shrink-0" data-category="video" role="tab">
             Video Prompts <span class="content-tab-count" data-count="video">0</span>
           </button>
-          <button class="content-tab" data-category="other" role="tab">
+          <button class="content-tab shrink-0" data-category="other" role="tab">
             Sonstiges <span class="content-tab-count" data-count="other">0</span>
           </button>
         </div>
 
-        <div class="content-grid" id="content-grid"></div>
+        <div class="content-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6" id="content-grid"></div>
 
       </main>
     </div>

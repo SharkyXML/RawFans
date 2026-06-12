@@ -147,10 +147,10 @@
         </div>
       </header>
 
-      <main class="page-content">
+      <main class="page-content dashboard-page">
 
         <!-- Stats -->
-        <div class="stats-grid">
+        <div class="stats-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6 md:mb-8">
           <div class="stat-card">
             <div class="stat-card-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
@@ -202,16 +202,17 @@
         </div>
 
         <!-- Dashboard Grid -->
-        <div class="dashboard-grid">
+        <div class="dashboard-grid grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-5 md:gap-6">
 
-          <div class="card">
-            <div class="card-header">
+          <div class="card dashboard-leads-card">
+            <div class="card-header flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h3>Neueste Leads</h3>
-              <a href="leads.html" class="btn btn-ghost btn-sm">Alle anzeigen →</a>
+              <a href="leads.html" class="btn btn-ghost btn-sm w-full sm:w-auto min-h-[44px] sm:min-h-0">Alle anzeigen →</a>
             </div>
             <div class="card-body" style="padding: 0;">
-              <div class="table-wrapper">
-                <table class="data-table">
+              <p class="table-scroll-hint lg:hidden px-4 pt-3">← Wischen für mehr Spalten · Unter 640px Kartenansicht</p>
+              <div class="table-wrapper table-scroll-sticky">
+                <table class="data-table dashboard-leads-table table-responsive-cards">
                   <thead>
                     <tr>
                       <th>Name</th>

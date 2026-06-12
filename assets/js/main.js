@@ -170,6 +170,35 @@ const RawFans = {
         overlay.classList.remove('active');
       });
     }
+
+    sidebar?.querySelectorAll('.nav-item:not(.disabled)').forEach((link) => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth < 1024) {
+          sidebar.classList.remove('open');
+          overlay?.classList.remove('active');
+        }
+      });
+    });
+  },
+
+  initFilterToggle(toggleId, panelId) {
+    const toggle = document.getElementById(toggleId);
+    const panel = document.getElementById(panelId);
+    if (!toggle || !panel) return;
+
+    const close = () => {
+      panel.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    };
+
+    toggle.addEventListener('click', () => {
+      const open = panel.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    panel.querySelectorAll('[data-filter-close]').forEach((btn) => {
+      btn.addEventListener('click', close);
+    });
   },
 
   updateTopbarDate() {
@@ -1123,11 +1152,11 @@ function initDashboard() {
       .map(
         (lead) => `
       <tr>
-        <td class="cell-primary">${RawFans.escapeHtml(lead.username)}</td>
-        <td>${RawFans.escapeHtml(lead.platform)}</td>
-        <td>${RawFans.formatFollowers(lead.followers)}</td>
-        <td>${RawFans.statusBadge(lead.status)}</td>
-        <td>${RawFans.formatDate(lead.date)}</td>
+        <td class="cell-primary" data-label="Name">${RawFans.escapeHtml(lead.username)}</td>
+        <td data-label="Plattform">${RawFans.platformPill(lead.platform)}</td>
+        <td data-label="Follower">${RawFans.formatFollowers(lead.followers)}</td>
+        <td data-label="Status">${RawFans.statusBadge(lead.status)}</td>
+        <td data-label="Datum">${RawFans.formatDate(lead.date)}</td>
       </tr>`
       )
       .join('');
@@ -1185,6 +1214,8 @@ function initLeads() {
     leadsFilter.status = e.target.value;
     scheduleRenderLeadsTable();
   });
+
+  RawFans.initFilterToggle('leads-filter-toggle', 'leads-filters-panel');
 
   document.getElementById('leads-table-body')?.addEventListener('click', (e) => {
     const editBtn = e.target.closest('[data-edit]');
@@ -1259,15 +1290,15 @@ function buildLeadRow(lead) {
   const statusClass = lead.status === 'signed' ? ' row-signed' : lead.status === 'interested' ? ' row-interested' : '';
 
   return `<tr data-id="${lead.id}" class="leads-row${statusClass}">
-    <td class="cell-date">${RawFans.formatDate(lead.date)}</td>
-    <td>${RawFans.platformPill(lead.platform)}</td>
-    <td class="cell-primary cell-username">${RawFans.escapeHtml(lead.username)}</td>
-    <td>${RawFans.profileChip(lead.profileLink, lead.platform)}</td>
-    <td class="cell-followers">${RawFans.formatFollowers(lead.followers)}</td>
-    <td>${RawFans.authBadge(lead.authenticity)}</td>
-    <td>${RawFans.attractivenessStars(lead.attractiveness)}</td>
-    <td>${RawFans.statusBadge(lead.status)}</td>
-    <td><span class="notes-cell ${notesClass}" title="${RawFans.escapeHtml(notes)}">${RawFans.escapeHtml(RawFans.truncate(notes)) || '—'}</span></td>
+    <td class="cell-date" data-label="Datum">${RawFans.formatDate(lead.date)}</td>
+    <td data-label="Plattform">${RawFans.platformPill(lead.platform)}</td>
+    <td class="cell-primary cell-username" data-label="Username">${RawFans.escapeHtml(lead.username)}</td>
+    <td data-label="Profil">${RawFans.profileChip(lead.profileLink, lead.platform)}</td>
+    <td class="cell-followers" data-label="Follower">${RawFans.formatFollowers(lead.followers)}</td>
+    <td data-label="Echt / AI">${RawFans.authBadge(lead.authenticity)}</td>
+    <td data-label="Attraktivität">${RawFans.attractivenessStars(lead.attractiveness)}</td>
+    <td data-label="Status">${RawFans.statusBadge(lead.status)}</td>
+    <td data-label="Notizen"><span class="notes-cell ${notesClass}" title="${RawFans.escapeHtml(notes)}">${RawFans.escapeHtml(RawFans.truncate(notes)) || '—'}</span></td>
     <td>
       <div class="table-actions">
         <button class="btn btn-ghost btn-sm btn-icon" data-edit="${lead.id}" title="Bearbeiten">
@@ -1804,6 +1835,8 @@ function initFinanzen() {
     if (deleteBtn) openDeleteFinanceModal(deleteBtn.dataset.financeDelete);
   });
 
+  RawFans.initFilterToggle('finance-filter-toggle', 'finance-filters-panel');
+
   renderFinance();
 }
 
@@ -1950,13 +1983,13 @@ function buildFinanceRow(entry) {
     : '<span class="finance-once-badge">Einmalig</span>';
 
   return `<tr data-id="${entry.id}" class="finance-row finance-row-${entry.type}">
-    <td class="cell-date">${RawFans.formatDate(entry.date)}</td>
-    <td><span class="finance-type-pill ${typeClass}">${RawFans.financeTypeLabel(entry.type)}</span></td>
-    <td class="cell-category">${RawFans.escapeHtml(entry.category)}</td>
-    <td class="cell-primary cell-description">${RawFans.escapeHtml(entry.description)}</td>
-    <td class="finance-amount ${typeClass}">${amountPrefix}${RawFans.formatCurrency(entry.amount)}</td>
-    <td>${recurringLabel}</td>
-    <td>${RawFans.financeStatusBadge(entry)}</td>
+    <td class="cell-date" data-label="Datum">${RawFans.formatDate(entry.date)}</td>
+    <td data-label="Typ"><span class="finance-type-pill ${typeClass}">${RawFans.financeTypeLabel(entry.type)}</span></td>
+    <td class="cell-category" data-label="Kategorie">${RawFans.escapeHtml(entry.category)}</td>
+    <td class="cell-primary cell-description" data-label="Beschreibung">${RawFans.escapeHtml(entry.description)}</td>
+    <td class="finance-amount ${typeClass}" data-label="Betrag">${amountPrefix}${RawFans.formatCurrency(entry.amount)}</td>
+    <td data-label="Wiederkehrend">${recurringLabel}</td>
+    <td data-label="Status">${RawFans.financeStatusBadge(entry)}</td>
     <td>
       <div class="table-actions">
         <button class="btn btn-ghost btn-sm btn-icon" data-finance-edit="${entry.id}" title="Bearbeiten">
@@ -2273,6 +2306,8 @@ function initOutreach() {
     });
   });
 
+  RawFans.initFilterToggle('log-filter-toggle', 'log-filters-panel');
+
   document.getElementById('templates-grid')?.addEventListener('click', (e) => {
     const copyBtn = e.target.closest('[data-template-copy]');
     const editBtn = e.target.closest('[data-template-edit]');
@@ -2587,16 +2622,16 @@ function buildLogRow(entry) {
     : '<span class="finance-once-badge">Nein</span>';
 
   return `<tr data-id="${entry.id}" class="${rowClasses.join(' ')}">
-    <td class="cell-date">${RawFans.formatDate(entry.date)}</td>
-    <td class="cell-lead">${leadCell}</td>
-    <td>${RawFans.escapeHtml(tpl?.title || '—')}</td>
-    <td>${typeBadge}</td>
-    <td>${RawFans.outreachStatusBadge(entry.status)}</td>
-    <td>${RawFans.sentimentBadge(entry.sentiment)}</td>
-    <td><span class="next-action-cell">${RawFans.escapeHtml(nextActionLabel)}</span></td>
-    <td>${followUpCell}</td>
-    <td>${callCell}</td>
-    <td><span class="notes-cell ${entry.notes ? 'has-notes' : ''}" title="${RawFans.escapeHtml(entry.notes)}">${RawFans.escapeHtml(RawFans.truncate(entry.notes, 36)) || '—'}</span></td>
+    <td class="cell-date" data-label="Datum">${RawFans.formatDate(entry.date)}</td>
+    <td class="cell-lead" data-label="Lead">${leadCell}</td>
+    <td data-label="Vorlage">${RawFans.escapeHtml(tpl?.title || '—')}</td>
+    <td data-label="Typ">${typeBadge}</td>
+    <td data-label="Status">${RawFans.outreachStatusBadge(entry.status)}</td>
+    <td data-label="Sentiment">${RawFans.sentimentBadge(entry.sentiment)}</td>
+    <td data-label="Nächste Aktion"><span class="next-action-cell">${RawFans.escapeHtml(nextActionLabel)}</span></td>
+    <td data-label="Follow-up">${followUpCell}</td>
+    <td data-label="Call">${callCell}</td>
+    <td data-label="Notizen"><span class="notes-cell ${entry.notes ? 'has-notes' : ''}" title="${RawFans.escapeHtml(entry.notes)}">${RawFans.escapeHtml(RawFans.truncate(entry.notes, 36)) || '—'}</span></td>
     <td>
       <div class="table-actions">
         <button class="btn btn-ghost btn-sm btn-icon" data-log-followup="${entry.id}" title="Follow-up loggen">
