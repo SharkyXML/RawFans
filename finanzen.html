@@ -123,6 +123,19 @@
 
       <main class="page-content finance-page">
 
+        <div class="leads-error-banner hidden" id="finance-error-banner" role="alert"></div>
+
+        <div class="leads-migration-banner hidden" id="finance-migration-banner">
+          <div class="leads-migration-text">
+            <strong>Lokale Finanzdaten gefunden</strong>
+            <p>Es sind noch <span id="finance-migration-count">0</span> Einträge im Browser gespeichert (<code>localStorage</code>).</p>
+          </div>
+          <div class="leads-migration-actions">
+            <button type="button" class="btn btn-primary min-h-[44px]" id="finance-migration-import">Alte Finanzdaten aus localStorage in Supabase importieren</button>
+            <button type="button" class="btn btn-ghost min-h-[44px]" id="finance-migration-dismiss">Später</button>
+          </div>
+        </div>
+
         <header class="finance-hero">
           <h2 id="finance-hero-title">Finanzübersicht</h2>
         </header>
@@ -415,6 +428,6 @@
   </div>
 
   <script src="assets/js/main.js"></script>
-  <script>initFinanzen();</script>
+  <script type="module" src="assets/js/finanzen-app.js?v=20260612"></script>
 </body>
 </html>

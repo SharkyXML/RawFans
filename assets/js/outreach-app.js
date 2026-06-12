@@ -10,6 +10,14 @@ import {
   getLocalStorageLeadCount,
   subscribeToLeads,
   unsubscribeFromLeads,
+  fetchOutreachLog,
+  addOutreachLog,
+  updateOutreachLog,
+  deleteOutreachLog,
+  importOutreachLogFromLocalStorage,
+  getLocalStorageOutreachLogCount,
+  subscribeToOutreachLog,
+  unsubscribeFromOutreachLog,
 } from './supabase-client.js';
 
 window.RawFansLeadsDB = {
@@ -21,6 +29,17 @@ window.RawFansLeadsDB = {
   getLocalStorageLeadCount,
   subscribeToLeads,
   unsubscribeFromLeads,
+};
+
+window.RawFansOutreachLogDB = {
+  fetchOutreachLog,
+  addOutreachLog,
+  updateOutreachLog,
+  deleteOutreachLog,
+  importOutreachLogFromLocalStorage,
+  getLocalStorageOutreachLogCount,
+  subscribeToOutreachLog,
+  unsubscribeFromOutreachLog,
 };
 
 initOutreach().catch((err) => {

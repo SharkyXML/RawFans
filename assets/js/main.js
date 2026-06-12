@@ -464,114 +464,6 @@ const RawFans = {
       this.set(this.STORAGE_KEYS.content, sampleContent);
     }
 
-    if (!this.get(this.STORAGE_KEYS.finance)) {
-      const now = new Date();
-      const thisMonth = (offset = 0) => {
-        const d = new Date(now.getFullYear(), now.getMonth() - offset, 15);
-        return d.toISOString();
-      };
-
-      const sampleFinance = [
-        {
-          id: this.generateId(),
-          date: thisMonth(0),
-          type: 'income',
-          category: 'Agentur-Einnahmen',
-          description: 'Management Fee — Sophia M.',
-          amount: 4500,
-          recurring: true,
-          recurringInterval: 'monthly',
-          status: 'received',
-          createdAt: thisMonth(0),
-        },
-        {
-          id: this.generateId(),
-          date: thisMonth(0),
-          type: 'income',
-          category: 'Agentur-Einnahmen',
-          description: 'Management Fee — Mia R.',
-          amount: 3200,
-          recurring: true,
-          recurringInterval: 'monthly',
-          status: 'received',
-          createdAt: thisMonth(0),
-        },
-        {
-          id: this.generateId(),
-          date: thisMonth(0),
-          type: 'expense',
-          category: 'Model Payout',
-          description: 'Payout Sophia M. — 70% Share',
-          amount: 2800,
-          recurring: true,
-          recurringInterval: 'monthly',
-          status: 'paid',
-          createdAt: thisMonth(0),
-        },
-        {
-          id: this.generateId(),
-          date: thisMonth(0),
-          type: 'expense',
-          category: 'Tools & Software',
-          description: 'Notion Team Plan',
-          amount: 48,
-          recurring: true,
-          recurringInterval: 'monthly',
-          status: 'paid',
-          createdAt: thisMonth(0),
-        },
-        {
-          id: this.generateId(),
-          date: thisMonth(0),
-          type: 'expense',
-          category: 'Werbung',
-          description: 'Meta Ads — Lead Generation',
-          amount: 850,
-          recurring: false,
-          recurringInterval: null,
-          status: 'paid',
-          createdAt: thisMonth(0),
-        },
-        {
-          id: this.generateId(),
-          date: thisMonth(0),
-          type: 'expense',
-          category: 'Lohn',
-          description: 'VA — Outreach Support',
-          amount: 1200,
-          recurring: true,
-          recurringInterval: 'monthly',
-          status: 'pending',
-          createdAt: thisMonth(0),
-        },
-        {
-          id: this.generateId(),
-          date: thisMonth(1),
-          type: 'income',
-          category: 'Agentur-Einnahmen',
-          description: 'Einmalige Consulting-Rechnung',
-          amount: 1500,
-          recurring: false,
-          recurringInterval: null,
-          status: 'received',
-          createdAt: thisMonth(1),
-        },
-        {
-          id: this.generateId(),
-          date: thisMonth(1),
-          type: 'expense',
-          category: 'Sonstiges',
-          description: 'Büromaterial',
-          amount: 120,
-          recurring: false,
-          recurringInterval: null,
-          status: 'paid',
-          createdAt: thisMonth(1),
-        },
-      ];
-      this.set(this.STORAGE_KEYS.finance, sampleFinance);
-    }
-
     const OUTREACH_TEMPLATE_SEED_VERSION = 2;
     const outreachSeedKey = 'rawfans_outreach_templates_seed_v';
     const outreachTemplateDefs = [
@@ -733,64 +625,6 @@ lange kein Kontakt! Wir haben gerade neue Slots frei und ich dachte an dich. Int
       this.set(outreachSeedKey, OUTREACH_TEMPLATE_SEED_VERSION);
     }
 
-    if (!this.get(this.STORAGE_KEYS.outreachLog)) {
-      const leads = this.get(this.STORAGE_KEYS.leads) || [];
-      const templates = this.get(this.STORAGE_KEYS.outreachTemplates) || [];
-      if (leads.length > 0 && templates.length > 0) {
-        const callTpl = templates.find((t) => t.category === 'call_invite') || templates[2];
-        const sampleLog = [
-          {
-            id: this.generateId(),
-            date: new Date(Date.now() - 2 * 86400000).toISOString(),
-            leadId: leads[0].id,
-            templateId: templates[0].id,
-            messageType: 'icebreaker',
-            status: 'positive_reply',
-            sentiment: 'interested',
-            nextAction: 'call_suggest',
-            followUpDate: new Date(Date.now() + 1 * 86400000).toISOString(),
-            callPlanned: false,
-            callDate: null,
-            callTime: '',
-            notes: 'Positiv reagiert, will mehr Infos zum Management',
-            createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-          },
-          {
-            id: this.generateId(),
-            date: new Date(Date.now() - 6 * 86400000).toISOString(),
-            leadId: leads[1]?.id || leads[0].id,
-            templateId: templates[1]?.id || templates[0].id,
-            messageType: 'followup1',
-            status: 'ghosted',
-            sentiment: 'neutral',
-            nextAction: 'followup2',
-            followUpDate: new Date(Date.now() - 1 * 86400000).toISOString(),
-            callPlanned: false,
-            callDate: null,
-            callTime: '',
-            notes: 'Keine Antwort — Follow-up überfällig!',
-            createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
-          },
-          {
-            id: this.generateId(),
-            date: new Date(Date.now() - 1 * 86400000).toISOString(),
-            leadId: leads[2]?.id || leads[0].id,
-            templateId: callTpl?.id || templates[0].id,
-            messageType: 'call_invite',
-            status: 'call_planned',
-            sentiment: 'interested',
-            nextAction: 'wait',
-            followUpDate: null,
-            callPlanned: true,
-            callDate: new Date(Date.now() + 3 * 86400000).toISOString(),
-            callTime: '15:00',
-            notes: 'Call bestätigt, Kalender-Invite senden',
-            createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
-          },
-        ];
-        this.set(this.STORAGE_KEYS.outreachLog, sampleLog);
-      }
-    }
   },
 
   /* ── Content CRUD ──────────────────────────────────────── */
@@ -1029,6 +863,20 @@ async function fetchSharedLeads() {
     throw new Error('Supabase Client nicht geladen. Bitte supabase-client.js auf dieser Seite einbinden.');
   }
   return RawFansLeadsDB.fetchLeads();
+}
+
+async function fetchSharedOutreachLog() {
+  if (!window.RawFansOutreachLogDB?.fetchOutreachLog) {
+    throw new Error('Supabase Outreach Log nicht geladen. Bitte outreach-app.js prüfen.');
+  }
+  return RawFansOutreachLogDB.fetchOutreachLog();
+}
+
+async function fetchSharedFinance() {
+  if (!window.RawFansFinanceDB?.fetchFinance) {
+    throw new Error('Supabase Finanzen nicht geladen. Bitte finanzen-app.js prüfen.');
+  }
+  return RawFansFinanceDB.fetchFinance();
 }
 
 /* ── Page: Dashboard ───────────────────────────────────────── */
@@ -1918,21 +1766,33 @@ let financeFilter = {
 let editingFinanceId = null;
 let financeToDeleteId = null;
 let financeCache = [];
+let financeSaving = false;
+let financeRealtimeRefreshScheduled = false;
 let financeRenderScheduled = false;
 
-function initFinanzen() {
-  RawFans.seedData();
+async function initFinanzen() {
   RawFans.initShell('finanzen');
   RawFans.initModal('finance-modal', { onClose: resetFinanceForm });
   RawFans.initModal('finance-delete-modal', { onClose: resetDeleteFinanceState });
 
-  financeCache = RawFans.getFinance();
-  populateMonthFilter();
-
   document.getElementById('add-finance-btn')?.addEventListener('click', () => openFinanceModal());
-  document.getElementById('finance-form')?.addEventListener('submit', handleFinanceSubmit);
-  document.getElementById('finance-delete-confirm')?.addEventListener('click', confirmDeleteFinance);
+  document.getElementById('finance-form')?.addEventListener('submit', (e) => {
+    handleFinanceSubmit(e).catch(handleFinanceError);
+  });
+  document.getElementById('finance-delete-confirm')?.addEventListener('click', () => {
+    confirmDeleteFinance().catch(handleFinanceError);
+  });
   document.getElementById('export-csv-btn')?.addEventListener('click', exportFinanceCSV);
+
+  document.getElementById('finance-migration-import')?.addEventListener('click', () => {
+    runFinanceMigration().catch(handleFinanceError);
+  });
+
+  document.getElementById('finance-migration-dismiss')?.addEventListener('click', () => {
+    document.getElementById('finance-migration-banner')?.classList.add('hidden');
+  });
+
+  window.addEventListener('beforeunload', () => RawFansFinanceDB?.unsubscribeFromFinance());
 
   document.getElementById('finance-recurring')?.addEventListener('change', toggleRecurringInterval);
 
@@ -1974,7 +1834,118 @@ function initFinanzen() {
 
   RawFans.initFilterToggle('finance-filter-toggle', 'finance-filters-panel');
 
-  renderFinance();
+  showFinanceError(null);
+
+  try {
+    if (!window.RawFansFinanceDB) {
+      throw new Error('Supabase Finanzen nicht geladen. Bitte finanzen-app.js prüfen.');
+    }
+    await loadFinanceFromSupabase();
+
+    RawFansFinanceDB.subscribeToFinance(() => {
+      if (financeRealtimeRefreshScheduled) return;
+      financeRealtimeRefreshScheduled = true;
+      requestAnimationFrame(async () => {
+        financeRealtimeRefreshScheduled = false;
+        try {
+          await loadFinanceFromSupabase({ silent: true });
+        } catch (err) {
+          console.warn('[Finanzen] Realtime-Refresh fehlgeschlagen:', err);
+        }
+      });
+    });
+
+    updateFinanceMigrationBanner();
+  } catch (err) {
+    handleFinanceError(err);
+    refreshFinanceLocalCache();
+    renderFinance();
+  }
+}
+
+function handleFinanceError(err) {
+  const message = err?.message || 'Finanzdaten konnten nicht geladen werden.';
+  showFinanceError(message);
+  RawFans.showToast(message);
+}
+
+function showFinanceError(message) {
+  const el = document.getElementById('finance-error-banner');
+  if (!el) return;
+  if (!message) {
+    el.classList.add('hidden');
+    el.textContent = '';
+    return;
+  }
+  el.textContent = message;
+  el.classList.remove('hidden');
+}
+
+function refreshFinanceLocalCache() {
+  financeCache = RawFans.getFinance();
+  populateMonthFilter();
+}
+
+async function loadFinanceFromSupabase({ silent = false } = {}) {
+  financeCache = await fetchSharedFinance();
+  populateMonthFilter();
+  if (!silent) updateFinanceMigrationBanner();
+  scheduleRenderFinance();
+}
+
+function updateFinanceMigrationBanner() {
+  const banner = document.getElementById('finance-migration-banner');
+  const countEl = document.getElementById('finance-migration-count');
+  if (!banner || !window.RawFansFinanceDB) return;
+
+  const localCount = RawFansFinanceDB.getLocalStorageFinanceCount();
+  if (localCount === 0) {
+    banner.classList.add('hidden');
+    return;
+  }
+
+  if (countEl) countEl.textContent = String(localCount);
+  banner.classList.remove('hidden');
+}
+
+async function runFinanceMigration() {
+  const btn = document.getElementById('finance-migration-import');
+  btn?.setAttribute('disabled', 'true');
+  if (btn) btn.textContent = 'Importiere…';
+
+  try {
+    const result = await RawFansFinanceDB.importFinanceFromLocalStorage();
+    await loadFinanceFromSupabase();
+
+    if (result.imported > 0) {
+      RawFans.showToast(
+        `${result.imported} Finanz-Eintrag${result.imported === 1 ? '' : 'e'} importiert`
+      );
+    } else if (result.alreadyMigrated) {
+      RawFans.showToast('Finanzdaten wurden bereits importiert');
+    } else {
+      RawFans.showToast('Keine lokalen Finanzdaten zum Importieren');
+    }
+
+    if (result.skipped > 0) {
+      RawFans.showToast(`${result.skipped} Einträge übersprungen (Duplikate/Fehler)`);
+    }
+
+    document.getElementById('finance-migration-banner')?.classList.add('hidden');
+  } finally {
+    btn?.removeAttribute('disabled');
+    if (btn) btn.textContent = 'Alte Finanzdaten aus localStorage in Supabase importieren';
+  }
+}
+
+function setFinanceSaving(isSaving) {
+  financeSaving = isSaving;
+  const submitBtn = document.querySelector('#finance-form button[type="submit"]');
+  const deleteBtn = document.getElementById('finance-delete-confirm');
+  submitBtn?.toggleAttribute('disabled', isSaving);
+  deleteBtn?.toggleAttribute('disabled', isSaving);
+  document.getElementById('add-finance-btn')?.toggleAttribute('disabled', isSaving);
+  if (submitBtn) submitBtn.textContent = isSaving ? 'Speichern…' : 'Speichern';
 }
 
 function populateMonthFilter() {
@@ -1993,11 +1964,6 @@ function populateMonthFilter() {
         `<option value="${key}" ${key === financeFilter.month ? 'selected' : ''}>${RawFans.formatMonthLabel(key)}</option>`
     )
     .join('');
-}
-
-function refreshFinanceCache() {
-  financeCache = RawFans.getFinance();
-  populateMonthFilter();
 }
 
 function scheduleRenderFinance() {
@@ -2251,18 +2217,21 @@ function openDeleteFinanceModal(id) {
   RawFans.openModal('finance-delete-modal');
 }
 
-function confirmDeleteFinance() {
+async function confirmDeleteFinance() {
   if (!financeToDeleteId) return;
 
-  const entries = financeCache.filter((e) => e.id !== financeToDeleteId);
-  RawFans.saveFinance(entries);
-  refreshFinanceCache();
-
-  RawFans.closeModal('finance-delete-modal');
-  RawFans.closeModal('finance-modal');
-  resetDeleteFinanceState();
-  resetFinanceForm();
-  scheduleRenderFinance();
+  setFinanceSaving(true);
+  try {
+    await RawFansFinanceDB.deleteFinance(financeToDeleteId);
+    await loadFinanceFromSupabase({ silent: true });
+    RawFans.closeModal('finance-delete-modal');
+    RawFans.closeModal('finance-modal');
+    resetDeleteFinanceState();
+    resetFinanceForm();
+    RawFans.showToast('Eintrag gelöscht');
+  } finally {
+    setFinanceSaving(false);
+  }
 }
 
 function resetDeleteFinanceState() {
@@ -2275,10 +2244,9 @@ function resetFinanceForm() {
   toggleRecurringInterval();
 }
 
-function handleFinanceSubmit(e) {
+async function handleFinanceSubmit(e) {
   e.preventDefault();
   const form = e.target;
-  const entries = [...financeCache];
 
   const entryData = {
     date: new Date(form.date.value).toISOString(),
@@ -2291,22 +2259,20 @@ function handleFinanceSubmit(e) {
     status: form.status.value,
   };
 
-  if (editingFinanceId) {
-    const index = entries.findIndex((e) => e.id === editingFinanceId);
-    if (index !== -1) entries[index] = { ...entries[index], ...entryData };
-  } else {
-    entries.unshift({
-      id: RawFans.generateId(),
-      ...entryData,
-      createdAt: new Date().toISOString(),
-    });
+  setFinanceSaving(true);
+  try {
+    if (editingFinanceId) {
+      await RawFansFinanceDB.updateFinance(editingFinanceId, entryData);
+    } else {
+      await RawFansFinanceDB.addFinance(entryData);
+    }
+    await loadFinanceFromSupabase({ silent: true });
+    RawFans.closeModal('finance-modal');
+    resetFinanceForm();
+    RawFans.showToast('Eintrag gespeichert');
+  } finally {
+    setFinanceSaving(false);
   }
-
-  RawFans.saveFinance(entries);
-  refreshFinanceCache();
-  RawFans.closeModal('finance-modal');
-  resetFinanceForm();
-  scheduleRenderFinance();
 }
 
 function exportFinanceCSV() {
@@ -2357,6 +2323,8 @@ let historyLeadId = null;
 let templatesCache = [];
 let outreachLogCache = [];
 let leadsCacheOutreach = [];
+let outreachLogSaving = false;
+let outreachLogRealtimeRefreshScheduled = false;
 let outreachRenderScheduled = false;
 let templatePersonalizeName = '';
 let templatePersonalizeScheduled = false;
@@ -2376,13 +2344,29 @@ async function initOutreach() {
   RawFans.initModal('lead-history-modal', { onClose: () => { historyLeadId = null; } });
 
   document.getElementById('template-delete-confirm')?.addEventListener('click', confirmDeleteTemplate);
-  document.getElementById('log-delete-confirm')?.addEventListener('click', confirmDeleteLog);
+  document.getElementById('log-delete-confirm')?.addEventListener('click', () => {
+    confirmDeleteLog().catch(handleOutreachError);
+  });
 
-  window.addEventListener('beforeunload', () => RawFansLeadsDB?.unsubscribeFromLeads());
+  window.addEventListener('beforeunload', () => {
+    RawFansLeadsDB?.unsubscribeFromLeads();
+    RawFansOutreachLogDB?.unsubscribeFromOutreachLog();
+  });
 
-  showOutreachLeadsError(null);
+  document.getElementById('outreach-log-migration-import')?.addEventListener('click', () => {
+    runOutreachLogMigration().catch(handleOutreachError);
+  });
+
+  document.getElementById('outreach-log-migration-dismiss')?.addEventListener('click', () => {
+    document.getElementById('outreach-log-migration-banner')?.classList.add('hidden');
+  });
+
+  showOutreachError(null);
 
   try {
+    if (!window.RawFansOutreachLogDB) {
+      throw new Error('Supabase Outreach Log nicht geladen. Bitte outreach-app.js prüfen.');
+    }
     await refreshOutreachCaches();
 
     RawFansLeadsDB.subscribeToLeads(() => {
@@ -2395,12 +2379,27 @@ async function initOutreach() {
           populateLogLeadSelect();
           scheduleRenderOutreach();
         } catch (err) {
-          console.warn('[Outreach] Realtime-Refresh fehlgeschlagen:', err);
+          console.warn('[Outreach] Leads Realtime-Refresh fehlgeschlagen:', err);
         }
       });
     });
+
+    RawFansOutreachLogDB.subscribeToOutreachLog(() => {
+      if (outreachLogRealtimeRefreshScheduled) return;
+      outreachLogRealtimeRefreshScheduled = true;
+      requestAnimationFrame(async () => {
+        outreachLogRealtimeRefreshScheduled = false;
+        try {
+          await loadOutreachLogFromSupabase({ silent: true });
+        } catch (err) {
+          console.warn('[Outreach] Log Realtime-Refresh fehlgeschlagen:', err);
+        }
+      });
+    });
+
+    updateOutreachLogMigrationBanner();
   } catch (err) {
-    handleOutreachLeadsError(err);
+    handleOutreachError(err);
     refreshOutreachLocalCaches();
   }
 
@@ -2408,10 +2407,12 @@ async function initOutreach() {
 
   document.getElementById('add-template-btn')?.addEventListener('click', () => openTemplateModal());
   document.getElementById('add-log-btn')?.addEventListener('click', () => {
-    openLogModal().catch(handleOutreachLeadsError);
+    openLogModal().catch(handleOutreachError);
   });
   document.getElementById('template-form')?.addEventListener('submit', handleTemplateSubmit);
-  document.getElementById('log-form')?.addEventListener('submit', handleLogSubmit);
+  document.getElementById('log-form')?.addEventListener('submit', (e) => {
+    handleLogSubmit(e).catch(handleOutreachError);
+  });
 
   document.getElementById('log-call-planned')?.addEventListener('change', (e) => {
     e.target.dataset.userSet = 'true';
@@ -2508,13 +2509,13 @@ async function initOutreach() {
   renderOutreach();
 }
 
-function handleOutreachLeadsError(err) {
-  const message = err?.message || 'Leads konnten nicht geladen werden.';
-  showOutreachLeadsError(message);
+function handleOutreachError(err) {
+  const message = err?.message || 'Outreach-Daten konnten nicht geladen werden.';
+  showOutreachError(message);
   RawFans.showToast(message);
 }
 
-function showOutreachLeadsError(message) {
+function showOutreachError(message) {
   const el = document.getElementById('outreach-leads-error-banner');
   if (!el) return;
   if (!message) {
@@ -2531,12 +2532,74 @@ function refreshOutreachLocalCaches() {
   outreachLogCache = RawFans.getOutreachLog();
 }
 
+async function loadOutreachLogFromSupabase({ silent = false } = {}) {
+  outreachLogCache = await fetchSharedOutreachLog();
+  if (!silent) updateOutreachLogMigrationBanner();
+  scheduleRenderOutreach();
+}
+
+function updateOutreachLogMigrationBanner() {
+  const banner = document.getElementById('outreach-log-migration-banner');
+  const countEl = document.getElementById('outreach-log-migration-count');
+  if (!banner || !window.RawFansOutreachLogDB) return;
+
+  const localCount = RawFansOutreachLogDB.getLocalStorageOutreachLogCount();
+  if (localCount === 0) {
+    banner.classList.add('hidden');
+    return;
+  }
+
+  if (countEl) countEl.textContent = String(localCount);
+  banner.classList.remove('hidden');
+}
+
+async function runOutreachLogMigration() {
+  const btn = document.getElementById('outreach-log-migration-import');
+  btn?.setAttribute('disabled', 'true');
+  if (btn) btn.textContent = 'Importiere…';
+
+  try {
+    const result = await RawFansOutreachLogDB.importOutreachLogFromLocalStorage();
+    await loadOutreachLogFromSupabase();
+
+    if (result.imported > 0) {
+      RawFans.showToast(
+        `${result.imported} Outreach-Eintrag${result.imported === 1 ? '' : 'e'} importiert`
+      );
+    } else if (result.alreadyMigrated) {
+      RawFans.showToast('Outreach Log wurde bereits importiert');
+    } else {
+      RawFans.showToast('Keine lokalen Outreach-Log-Daten zum Importieren');
+    }
+
+    if (result.skipped > 0) {
+      RawFans.showToast(`${result.skipped} Einträge übersprungen (Duplikate/Fehler)`);
+    }
+
+    document.getElementById('outreach-log-migration-banner')?.classList.add('hidden');
+  } finally {
+    btn?.removeAttribute('disabled');
+    if (btn) btn.textContent = 'Altes Outreach Log aus localStorage in Supabase importieren';
+  }
+}
+
+function setOutreachLogSaving(isSaving) {
+  outreachLogSaving = isSaving;
+  const submitBtn = document.querySelector('#log-form button[type="submit"]');
+  const deleteBtn = document.getElementById('log-delete-confirm');
+  submitBtn?.toggleAttribute('disabled', isSaving);
+  deleteBtn?.toggleAttribute('disabled', isSaving);
+  if (submitBtn) submitBtn.textContent = isSaving ? 'Speichern…' : 'Speichern';
+}
+
 async function refreshOutreachCaches() {
-  refreshOutreachLocalCaches();
+  templatesCache = RawFans.getOutreachTemplates();
+  outreachLogCache = await fetchSharedOutreachLog();
   leadsCacheOutreach = await fetchSharedLeads();
-  showOutreachLeadsError(null);
+  showOutreachError(null);
   populateLogLeadSelect();
   populateLogTemplateSelect();
+  updateOutreachLogMigrationBanner();
 }
 
 function switchOutreachTab(tab) {
@@ -2891,7 +2954,7 @@ function renderLog() {
       <button class="btn btn-primary" id="empty-add-log">Eintrag loggen</button>
     </div></td></tr>`;
     document.getElementById('empty-add-log')?.addEventListener('click', () => {
-      openLogModal().catch(handleOutreachLeadsError);
+      openLogModal().catch(handleOutreachError);
     });
     return;
   }
@@ -3078,7 +3141,7 @@ function openQuickFollowUp(entryId) {
     nextAction: suggestedType === 'call_invite' ? 'wait' : 'followup2',
     followUpDate: followUpDate.toISOString(),
     callPlanned: RawFans.isCallMessageType(suggestedType),
-  }).catch(handleOutreachLeadsError);
+  }).catch(handleOutreachError);
 }
 
 function openLeadHistory(leadId) {
@@ -3153,7 +3216,7 @@ function openLeadHistory(leadId) {
       RawFans.closeModal('lead-history-modal');
       const last = thread[thread.length - 1];
       if (last) openQuickFollowUp(last.id);
-      else openLogModal(null, { leadId }).catch(handleOutreachLeadsError);
+      else openLogModal(null, { leadId }).catch(handleOutreachError);
     };
   }
 
@@ -3162,7 +3225,7 @@ function openLeadHistory(leadId) {
 
 function editLog(id) {
   const entry = outreachLogCache.find((e) => e.id === id);
-  if (entry) openLogModal(entry).catch(handleOutreachLeadsError);
+  if (entry) openLogModal(entry).catch(handleOutreachError);
 }
 
 function openDeleteLogModal(id) {
@@ -3174,16 +3237,21 @@ function openDeleteLogModal(id) {
   RawFans.openModal('log-delete-modal');
 }
 
-function confirmDeleteLog() {
+async function confirmDeleteLog() {
   if (!logToDeleteId) return;
-  const items = outreachLogCache.filter((e) => e.id !== logToDeleteId);
-  RawFans.saveOutreachLog(items);
-  refreshOutreachLocalCaches();
-  RawFans.closeModal('log-delete-modal');
-  RawFans.closeModal('log-modal');
-  logToDeleteId = null;
-  resetLogForm();
-  scheduleRenderOutreach();
+
+  setOutreachLogSaving(true);
+  try {
+    await RawFansOutreachLogDB.deleteOutreachLog(logToDeleteId);
+    await loadOutreachLogFromSupabase({ silent: true });
+    RawFans.closeModal('log-delete-modal');
+    RawFans.closeModal('log-modal');
+    logToDeleteId = null;
+    resetLogForm();
+    RawFans.showToast('Eintrag gelöscht');
+  } finally {
+    setOutreachLogSaving(false);
+  }
 }
 
 function resetLogForm() {
@@ -3195,7 +3263,7 @@ function resetLogForm() {
   toggleCallFields();
 }
 
-function handleLogSubmit(e) {
+async function handleLogSubmit(e) {
   e.preventDefault();
   const form = e.target;
   if (!form.leadId.value) {
@@ -3204,7 +3272,6 @@ function handleLogSubmit(e) {
   }
 
   const callPlanned = form.callPlanned?.checked || false;
-  const items = [...outreachLogCache];
   const data = {
     date: new Date(form.date.value).toISOString(),
     leadId: form.leadId.value,
@@ -3224,17 +3291,18 @@ function handleLogSubmit(e) {
     notes: form.notes.value.trim(),
   };
 
-  if (editingLogId) {
-    const i = items.findIndex((e) => e.id === editingLogId);
-    if (i !== -1) items[i] = { ...items[i], ...data };
-  } else {
-    items.unshift({ id: RawFans.generateId(), ...data, createdAt: new Date().toISOString() });
+  setOutreachLogSaving(true);
+  try {
+    if (editingLogId) {
+      await RawFansOutreachLogDB.updateOutreachLog(editingLogId, data);
+    } else {
+      await RawFansOutreachLogDB.addOutreachLog(data);
+    }
+    await loadOutreachLogFromSupabase({ silent: true });
+    RawFans.closeModal('log-modal');
+    resetLogForm();
+    RawFans.showToast('Outreach gespeichert');
+  } finally {
+    setOutreachLogSaving(false);
   }
-
-  RawFans.saveOutreachLog(items);
-  refreshOutreachLocalCaches();
-  RawFans.closeModal('log-modal');
-  resetLogForm();
-  scheduleRenderOutreach();
-  RawFans.showToast('Outreach gespeichert');
 }
