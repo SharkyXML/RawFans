@@ -1,12 +1,11 @@
 /**
- * RawFans — Supabase Client & Leads API
+ * RawFans — Supabase Leads API (ES Module)
  *
- * Benötigt: @supabase/supabase-js (CDN) vor diesem Script in leads.html
- *
- * RLS in Supabase (einmalig ausführen, falls noch nicht vorhanden):
- *   ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
- *   CREATE POLICY "Allow all for now" ON leads FOR ALL USING (true) WITH CHECK (true);
+ * Client wird genau einmal als `supabaseClient` initialisiert — nie `supabase` deklarieren,
+ * da die Library global ebenfalls `supabase` nutzen kann.
  */
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
 const SUPABASE_URL = 'https://wyandwrbzrlxjvxvjds.supabase.co';
 const SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5YW5kd3JienJseHZqdnh2amRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjg5NzYsImV4cCI6MjA5Njg0NDk3Nn0.2mHu4S4YTT5xS_ZhH5tlE2c5jq8OUaxfweg-rse-Wic';
@@ -15,13 +14,8 @@ const LEADS_TABLE = 'leads';
 const LOCAL_STORAGE_KEY = 'rawfans_leads';
 const MIGRATION_FLAG_KEY = 'rawfans_leads_supabase_migrated';
 
-if (!window.supabase?.createClient) {
-  throw new Error(
-    'Supabase Library nicht geladen. Bitte @supabase/supabase-js CDN vor supabase-client.js einbinden.'
-  );
-}
-
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+/** Einzige Client-Instanz im gesamten Projekt */
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let realtimeChannel = null;
 let onRealtimeChange = null;
@@ -104,10 +98,10 @@ function leadToRow(lead) {
 }
 
 /** Alle Leads laden (neueste zuerst nach created_at) */
-async function fetchLeads() {
+export async function fetchLeads() {
   console.info('[Supabase] fetchLeads()…');
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from(LEADS_TABLE)
     .select('*')
     .order('created_at', { ascending: false });
@@ -120,7 +114,7 @@ async function fetchLeads() {
 }
 
 /** Neuen Lead anlegen */
-async function addLead(leadData, options = {}) {
+export async function addLead(leadData, options = {}) {
   const { preserveId = false, preserveCreatedAt = false } = options;
   const normalized = normalizeLead(leadData);
 
@@ -139,14 +133,14 @@ async function addLead(leadData, options = {}) {
 
   console.info('[Supabase] addLead():', row.username);
 
-  const { data, error } = await supabase.from(LEADS_TABLE).insert(row).select().single();
+  const { data, error } = await supabaseClient.from(LEADS_TABLE).insert(row).select().single();
 
   if (error) handleError(error, 'Lead anlegen fehlgeschlagen');
   return rowToLead(data);
 }
 
 /** Lead aktualisieren */
-async function updateLead(id, leadData) {
+export async function updateLead(id, leadData) {
   const row = {
     ...leadToRow(leadData),
     updated_at: new Date().toISOString(),
@@ -154,23 +148,28 @@ async function updateLead(id, leadData) {
 
   console.info('[Supabase] updateLead():', id);
 
-  const { data, error } = await supabase.from(LEADS_TABLE).update(row).eq('id', id).select().single();
+  const { data, error } = await supabaseClient
+    .from(LEADS_TABLE)
+    .update(row)
+    .eq('id', id)
+    .select()
+    .single();
 
   if (error) handleError(error, 'Lead aktualisieren fehlgeschlagen');
   return rowToLead(data);
 }
 
 /** Lead löschen */
-async function deleteLead(id) {
+export async function deleteLead(id) {
   console.info('[Supabase] deleteLead():', id);
 
-  const { error } = await supabase.from(LEADS_TABLE).delete().eq('id', id);
+  const { error } = await supabaseClient.from(LEADS_TABLE).delete().eq('id', id);
 
   if (error) handleError(error, 'Lead löschen fehlgeschlagen');
   return true;
 }
 
-function getLocalStorageLeadCount() {
+export function getLocalStorageLeadCount() {
   if (localStorage.getItem(MIGRATION_FLAG_KEY) === 'true') return 0;
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -183,7 +182,7 @@ function getLocalStorageLeadCount() {
   }
 }
 
-async function importFromLocalStorage() {
+export async function importFromLocalStorage() {
   if (localStorage.getItem(MIGRATION_FLAG_KEY) === 'true') {
     console.info('[Supabase] Migration bereits abgeschlossen');
     return { imported: 0, skipped: 0, alreadyMigrated: true };
@@ -232,10 +231,10 @@ async function importFromLocalStorage() {
   return { imported, skipped };
 }
 
-function subscribeToLeads(callback) {
+export function subscribeToLeads(callback) {
   onRealtimeChange = callback;
 
-  realtimeChannel = supabase
+  realtimeChannel = supabaseClient
     .channel('rawfans-leads-realtime')
     .on('postgres_changes', { event: '*', schema: 'public', table: LEADS_TABLE }, () => {
       console.info('[Supabase] Realtime-Update empfangen');
@@ -247,21 +246,10 @@ function subscribeToLeads(callback) {
     });
 }
 
-function unsubscribeFromLeads() {
+export function unsubscribeFromLeads() {
   if (realtimeChannel) {
-    supabase.removeChannel(realtimeChannel);
+    supabaseClient.removeChannel(realtimeChannel);
     realtimeChannel = null;
   }
   onRealtimeChange = null;
 }
-
-window.RawFansLeadsDB = {
-  fetchLeads,
-  addLead,
-  updateLead,
-  deleteLead,
-  importFromLocalStorage,
-  getLocalStorageLeadCount,
-  subscribeToLeads,
-  unsubscribeFromLeads,
-};
