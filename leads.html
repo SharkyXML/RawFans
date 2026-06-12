@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leads — RawFans</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            raw: { base: '#0a0a0c', elevated: '#0f0f11', accent: '#ff2e63' }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Space Grotesk', 'Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <div class="app-shell">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <a href="index.html" class="sidebar-brand-link">
+          <div class="sidebar-logo">R</div>
+          <div class="sidebar-brand-text">
+            <span class="sidebar-brand-name">RawFans</span>
+            <span class="sidebar-brand-tagline">Agency Internal</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <span class="sidebar-section-label">Übersicht</span>
+        <a href="index.html" class="nav-item" data-page="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          Dashboard
+        </a>
+
+        <span class="sidebar-section-label">Management</span>
+        <a href="leads.html" class="nav-item active" data-page="leads">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+          Leads
+        </a>
+        <a href="outreach.html" class="nav-item" data-page="outreach">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+          Outreach
+        </a>
+        <a href="content.html" class="nav-item" data-page="content">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+          </svg>
+          Content Hub
+        </a>
+        <a href="finanzen.html" class="nav-item" data-page="finanzen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <line x1="12" y1="1" x2="12" y2="23"/>
+            <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+          </svg>
+          Finanzen
+        </a>
+        <a href="#" class="nav-item disabled" data-page="models">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+          Models
+          <span class="nav-badge">Soon</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-avatar">RF</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">RawFans Team</div>
+            <div class="sidebar-user-role">Administrator</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-wrapper">
+
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="topbar-menu-btn" id="sidebar-toggle" aria-label="Menü öffnen">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="topbar-title-group">
+            <h1 class="topbar-title">Leads</h1>
+            <span class="topbar-subtitle">Lead Pipeline & Management</span>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <span class="topbar-date" id="topbar-date"></span>
+        </div>
+      </header>
+
+      <main class="page-content leads-page">
+
+        <div class="leads-hero">
+          <div class="leads-hero-text">
+            <h2>Leads</h2>
+            <p>Lead Pipeline & Management — von der ersten Kontaktaufnahme bis zum Signing.</p>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="leads-stats-grid">
+          <div class="leads-stat-card">
+            <div class="leads-stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+            </div>
+            <div class="leads-stat-body">
+              <span class="leads-stat-label">Gesamte Leads</span>
+              <span class="leads-stat-value" id="stat-leads-total">0</span>
+            </div>
+          </div>
+          <div class="leads-stat-card accent">
+            <div class="leads-stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="leads-stat-body">
+              <span class="leads-stat-label">Neu diese Woche</span>
+              <span class="leads-stat-value" id="stat-leads-week">0</span>
+            </div>
+          </div>
+          <div class="leads-stat-card purple">
+            <div class="leads-stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              </svg>
+            </div>
+            <div class="leads-stat-body">
+              <span class="leads-stat-label">Angeschrieben</span>
+              <span class="leads-stat-value" id="stat-leads-messaged">0</span>
+            </div>
+          </div>
+          <div class="leads-stat-card success">
+            <div class="leads-stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <div class="leads-stat-body">
+              <span class="leads-stat-label">Interessiert / Signed</span>
+              <span class="leads-stat-value" id="stat-leads-converted">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters & Actions -->
+        <div class="leads-control-bar">
+          <div class="leads-filters">
+            <div class="filter-search leads-filter-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+              </svg>
+              <input type="text" id="leads-search" placeholder="Suchen…" autocomplete="off">
+            </div>
+            <select class="filter-select leads-filter-select" id="leads-platform-filter">
+              <option value="all">Plattform</option>
+              <option value="Instagram">Instagram</option>
+              <option value="X">X</option>
+              <option value="TikTok">TikTok</option>
+              <option value="Other">Other</option>
+            </select>
+            <select class="filter-select leads-filter-select" id="leads-auth-filter">
+              <option value="all">Echt / AI</option>
+              <option value="real">Echt</option>
+              <option value="ai">KI</option>
+              <option value="uncertain">Unsicher</option>
+            </select>
+            <select class="filter-select leads-filter-select" id="leads-status-filter">
+              <option value="all">Status</option>
+              <option value="new">Neu</option>
+              <option value="messaged">Angeschrieben</option>
+              <option value="replied">Geantwortet</option>
+              <option value="interested">Interessiert</option>
+              <option value="rejected">Abgelehnt</option>
+              <option value="signed">Signed</option>
+            </select>
+          </div>
+          <button class="btn btn-primary leads-add-btn" id="add-lead-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Neuer Lead
+          </button>
+        </div>
+
+        <!-- Empty State (no leads at all) -->
+        <div class="leads-empty-panel hidden" id="leads-empty-panel">
+          <div class="leads-empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+              <path d="M16 3.13a4 4 0 010 7.75"/>
+              <line x1="12" y1="11" x2="12" y2="17"/>
+              <line x1="9" y1="14" x2="15" y2="14"/>
+            </svg>
+          </div>
+          <h3>Noch keine Leads vorhanden</h3>
+          <p>Fange an, neue Creatorinnen zu scouten oder importiere bestehende Leads in deine Pipeline.</p>
+          <button class="btn btn-primary btn-lg" id="empty-add-lead-main">Ersten Lead anlegen</button>
+        </div>
+
+        <!-- Table -->
+        <div class="card leads-table-card leads-table-premium" id="leads-table-card">
+          <div class="leads-table-header">
+            <div class="leads-table-header-left">
+              <h3>Pipeline</h3>
+              <span class="leads-count-badge" id="leads-count">0 Leads</span>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table leads-data-table" id="leads-table">
+              <thead>
+                <tr>
+                  <th>Datum</th>
+                  <th>Plattform</th>
+                  <th>Username</th>
+                  <th>Profil</th>
+                  <th>Follower</th>
+                  <th>Echt / AI</th>
+                  <th>Attraktivität</th>
+                  <th>Status</th>
+                  <th>Notizen</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="leads-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Lead Modal -->
+  <div class="modal-overlay" id="lead-modal">
+    <div class="modal modal-lead">
+      <div class="modal-header">
+        <div>
+          <h3 id="lead-modal-title">Neuer Lead</h3>
+          <p>Pflichtfelder sind mit * markiert</p>
+        </div>
+        <button class="modal-close" data-modal-close aria-label="Schließen">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <form id="lead-form">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="lead-date">Datum *</label>
+              <input type="date" id="lead-date" name="date" required>
+            </div>
+            <div class="form-group">
+              <label for="lead-platform">Plattform *</label>
+              <select id="lead-platform" name="platform" required>
+                <option value="Instagram">Instagram</option>
+                <option value="X">X</option>
+                <option value="TikTok">TikTok</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="lead-username">Username *</label>
+              <input type="text" id="lead-username" name="username" required placeholder="@username">
+            </div>
+            <div class="form-group">
+              <label for="lead-profile">Profil-Link</label>
+              <input type="url" id="lead-profile" name="profileLink" placeholder="https://instagram.com/…">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="lead-followers">Follower</label>
+              <input type="number" id="lead-followers" name="followers" min="0" placeholder="z.B. 42000">
+            </div>
+            <div class="form-group">
+              <label for="lead-auth">Echt / AI</label>
+              <select id="lead-auth" name="authenticity">
+                <option value="real">Echt</option>
+                <option value="ai">KI</option>
+                <option value="uncertain">Unsicher</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="lead-attract">Attraktivität (1–10)</label>
+              <div class="attract-slider-wrap">
+                <input type="range" id="lead-attract" name="attractiveness" min="1" max="10" value="5">
+                <span class="attract-slider-value" id="lead-attract-value">5</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="lead-status">Status</label>
+              <select id="lead-status" name="status">
+                <option value="new">Neu</option>
+                <option value="messaged">Angeschrieben</option>
+                <option value="replied">Geantwortet</option>
+                <option value="interested">Interessiert</option>
+                <option value="rejected">Abgelehnt</option>
+                <option value="signed">Signed</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="lead-notes">Notizen</label>
+            <textarea id="lead-notes" name="notes" rows="3" placeholder="Interne Notizen zum Lead…"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-modal-close>Abbrechen</button>
+          <button type="submit" class="btn btn-primary">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="lead-delete-modal">
+    <div class="modal modal-delete">
+      <div class="modal-delete-header">
+        <div class="modal-delete-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+        </div>
+        <h3>Lead wirklich löschen?</h3>
+      </div>
+      <div class="modal-delete-body">
+        <p>
+          Möchtest du den Lead <strong id="lead-delete-username">@username</strong> wirklich löschen?
+          Diese Aktion kann nicht rückgängig gemacht werden.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-modal-close>Abbrechen</button>
+        <button type="button" class="btn btn-delete-confirm" id="lead-delete-confirm">Ja, löschen</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/main.js"></script>
+  <script>initLeads();</script>
+</body>
+</html>
