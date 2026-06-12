@@ -1,7 +1,11 @@
 /**
  * RawFans — Supabase Client & Leads API
  *
- * Benötigt: @supabase/supabase-js (CDN) vor diesem Script
+ * Benötigt: @supabase/supabase-js (CDN) vor diesem Script in leads.html
+ *
+ * RLS in Supabase (einmalig ausführen, falls noch nicht vorhanden):
+ *   ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
+ *   CREATE POLICY "Allow all for now" ON leads FOR ALL USING (true) WITH CHECK (true);
  */
 const SUPABASE_URL = 'https://wyandwrbzrlxjvxvjds.supabase.co';
 const SUPABASE_ANON_KEY =
@@ -10,6 +14,12 @@ const SUPABASE_ANON_KEY =
 const LEADS_TABLE = 'leads';
 const LOCAL_STORAGE_KEY = 'rawfans_leads';
 const MIGRATION_FLAG_KEY = 'rawfans_leads_supabase_migrated';
+
+if (!window.supabase?.createClient) {
+  throw new Error(
+    'Supabase Library nicht geladen. Bitte @supabase/supabase-js CDN vor supabase-client.js einbinden.'
+  );
+}
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 

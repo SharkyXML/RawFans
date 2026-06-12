@@ -123,6 +123,8 @@
 
       <main class="page-content outreach-page">
 
+        <div class="leads-error-banner hidden" id="outreach-leads-error-banner" role="alert"></div>
+
         <div class="page-header flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6 md:mb-8">
           <div class="page-header-text">
             <h2 class="text-2xl md:text-[28px]">Outreach Center</h2>
@@ -547,7 +549,9 @@
     <span id="toast-message">Erfolg</span>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/main.js"></script>
-  <script>initOutreach();</script>
+  <script>initOutreach().catch((err) => console.error(err));</script>
 </body>
 </html>

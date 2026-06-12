@@ -404,77 +404,6 @@ const RawFans = {
   /* ── Seed Data ─────────────────────────────────────────── */
 
   seedData() {
-    if (!this.get(this.STORAGE_KEYS.leads)) {
-      const sampleLeads = [
-        {
-          id: this.generateId(),
-          date: new Date(Date.now() - 5 * 86400000).toISOString(),
-          platform: 'Instagram',
-          username: '@sophia.m',
-          profileLink: 'https://instagram.com/sophia.m',
-          followers: 42000,
-          authenticity: 'real',
-          attractiveness: 8,
-          status: 'interested',
-          notes: 'Antwortet regelmäßig, Follow-up nächste Woche',
-          createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-        },
-        {
-          id: this.generateId(),
-          date: new Date(Date.now() - 3 * 86400000).toISOString(),
-          platform: 'TikTok',
-          username: '@lenak',
-          profileLink: 'https://tiktok.com/@lenak',
-          followers: 128000,
-          authenticity: 'real',
-          attractiveness: 9,
-          status: 'messaged',
-          notes: 'Erste Nachricht gesendet',
-          createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-        },
-        {
-          id: this.generateId(),
-          date: new Date(Date.now() - 21 * 86400000).toISOString(),
-          platform: 'X',
-          username: '@miar_official',
-          profileLink: 'https://x.com/miar_official',
-          followers: 8500,
-          authenticity: 'uncertain',
-          attractiveness: 7,
-          status: 'signed',
-          notes: 'Vertrag unterschrieben, Onboarding läuft',
-          createdAt: new Date(Date.now() - 21 * 86400000).toISOString(),
-        },
-        {
-          id: this.generateId(),
-          date: new Date().toISOString(),
-          platform: 'Instagram',
-          username: '@annaw',
-          profileLink: 'https://instagram.com/annaw',
-          followers: 67000,
-          authenticity: 'ai',
-          attractiveness: 6,
-          status: 'new',
-          notes: 'Profil wirkt generiert — prüfen',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: this.generateId(),
-          date: new Date(Date.now() - 1 * 86400000).toISOString(),
-          platform: 'TikTok',
-          username: '@jess.vibes',
-          profileLink: 'https://tiktok.com/@jess.vibes',
-          followers: 245000,
-          authenticity: 'real',
-          attractiveness: 10,
-          status: 'replied',
-          notes: 'Hat geantwortet, Call vereinbaren',
-          createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
-        },
-      ];
-      this.set(this.STORAGE_KEYS.leads, sampleLeads);
-    }
-
     if (!this.get(this.STORAGE_KEYS.content)) {
       const sampleContent = [
         {
@@ -864,20 +793,6 @@ lange kein Kontakt! Wir haben gerade neue Slots frei und ich dachte an dich. Int
     }
   },
 
-  /* ── Leads CRUD ────────────────────────────────────────── */
-
-  getLeads() {
-    const raw = this.get(this.STORAGE_KEYS.leads) || [];
-    const migrated = raw.map((l) => this.migrateLead(l));
-    const changed = raw.some((l, i) => JSON.stringify(l) !== JSON.stringify(migrated[i]));
-    if (changed) this.set(this.STORAGE_KEYS.leads, migrated);
-    return migrated;
-  },
-
-  saveLeads(leads) {
-    this.set(this.STORAGE_KEYS.leads, leads);
-  },
-
   /* ── Content CRUD ──────────────────────────────────────── */
 
   CONTENT_CATEGORIES: {
@@ -1058,8 +973,7 @@ lange kein Kontakt! Wir haben gerade neue Slots frei und ich dachte an dich. Int
 
   /* ── Dashboard Stats ───────────────────────────────────── */
 
-  getDashboardStats() {
-    const leads = this.getLeads();
+  getDashboardStats(leads = []) {
     const total = leads.length;
     const contactedThisWeek = leads.filter(
       (l) => ['messaged', 'replied', 'contacted'].includes(l.status) && this.isThisWeek(l.date)
@@ -1070,8 +984,7 @@ lange kein Kontakt! Wir haben gerade neue Slots frei und ich dachte an dich. Int
     return { total, contactedThisWeek, signed, interested };
   },
 
-  getRecentActivity() {
-    const leads = this.getLeads();
+  getRecentActivity(leads = []) {
     const activities = [];
 
     leads.forEach((lead) => {
@@ -1105,13 +1018,87 @@ lange kein Kontakt! Wir haben gerade neue Slots frei und ich dachte an dich. Int
   },
 };
 
+/* ── Shared Supabase Leads ───────────────────────────────── */
+
+let dashboardLeadsCache = [];
+let dashboardLeadsRefreshScheduled = false;
+let outreachLeadsRefreshScheduled = false;
+
+async function fetchSharedLeads() {
+  if (!window.RawFansLeadsDB?.fetchLeads) {
+    throw new Error('Supabase Client nicht geladen. Bitte supabase-client.js auf dieser Seite einbinden.');
+  }
+  return RawFansLeadsDB.fetchLeads();
+}
+
 /* ── Page: Dashboard ───────────────────────────────────────── */
 
-function initDashboard() {
+async function initDashboard() {
   RawFans.seedData();
   RawFans.initShell('dashboard');
 
-  const stats = RawFans.getDashboardStats();
+  window.addEventListener('beforeunload', () => RawFansLeadsDB?.unsubscribeFromLeads());
+
+  setDashboardLoading(true);
+  showDashboardError(null);
+
+  try {
+    dashboardLeadsCache = await fetchSharedLeads();
+    renderDashboard(dashboardLeadsCache);
+
+    RawFansLeadsDB.subscribeToLeads(() => {
+      if (dashboardLeadsRefreshScheduled) return;
+      dashboardLeadsRefreshScheduled = true;
+      requestAnimationFrame(async () => {
+        dashboardLeadsRefreshScheduled = false;
+        try {
+          dashboardLeadsCache = await fetchSharedLeads();
+          renderDashboard(dashboardLeadsCache);
+        } catch (err) {
+          console.warn('[Dashboard] Realtime-Refresh fehlgeschlagen:', err);
+        }
+      });
+    });
+  } catch (err) {
+    handleDashboardError(err);
+    renderDashboard([]);
+  } finally {
+    setDashboardLoading(false);
+  }
+}
+
+function handleDashboardError(err) {
+  const message = err?.message || 'Leads konnten nicht geladen werden.';
+  showDashboardError(message);
+}
+
+function showDashboardError(message) {
+  const el = document.getElementById('dashboard-error-banner');
+  if (!el) return;
+  if (!message) {
+    el.classList.add('hidden');
+    el.textContent = '';
+    return;
+  }
+  el.textContent = message;
+  el.classList.remove('hidden');
+}
+
+function setDashboardLoading(isLoading) {
+  const tbody = document.getElementById('recent-leads-body');
+  if (isLoading && tbody) {
+    tbody.innerHTML = `
+      <tr><td colspan="5">
+        <div class="leads-loading-state">
+          <div class="leads-loading-spinner"></div>
+          <p>Leads werden geladen…</p>
+        </div>
+      </td></tr>`;
+  }
+}
+
+function renderDashboard(leads) {
+  const stats = RawFans.getDashboardStats(leads);
 
   document.getElementById('stat-total').textContent = stats.total;
   document.getElementById('stat-contacted').textContent = stats.contactedThisWeek;
@@ -1119,7 +1106,7 @@ function initDashboard() {
   document.getElementById('stat-interested').textContent = stats.interested;
 
   const activityList = document.getElementById('activity-list');
-  const activities = RawFans.getRecentActivity();
+  const activities = RawFans.getRecentActivity(leads);
 
   if (activities.length === 0) {
     activityList.innerHTML = `
@@ -1140,7 +1127,7 @@ function initDashboard() {
   }
 
   const recentLeadsBody = document.getElementById('recent-leads-body');
-  const recentLeads = RawFans.getLeads()
+  const recentLeads = [...leads]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 5);
 
@@ -2379,7 +2366,7 @@ const TEMPLATE_NAME_PLACEHOLDER_RE = /\[Name\]|\(name\)|\{\{name\}\}/gi;
 const REPLY_STATUSES = ['replied', 'positive_reply', 'call_planned', 'call_done'];
 const TERMINAL_STATUSES = ['negative', 'call_done'];
 
-function initOutreach() {
+async function initOutreach() {
   RawFans.seedData();
   RawFans.initShell('outreach');
   RawFans.initModal('template-modal', { onClose: resetTemplateForm });
@@ -2391,11 +2378,38 @@ function initOutreach() {
   document.getElementById('template-delete-confirm')?.addEventListener('click', confirmDeleteTemplate);
   document.getElementById('log-delete-confirm')?.addEventListener('click', confirmDeleteLog);
 
-  refreshOutreachCaches();
+  window.addEventListener('beforeunload', () => RawFansLeadsDB?.unsubscribeFromLeads());
+
+  showOutreachLeadsError(null);
+
+  try {
+    await refreshOutreachCaches();
+
+    RawFansLeadsDB.subscribeToLeads(() => {
+      if (outreachLeadsRefreshScheduled) return;
+      outreachLeadsRefreshScheduled = true;
+      requestAnimationFrame(async () => {
+        outreachLeadsRefreshScheduled = false;
+        try {
+          leadsCacheOutreach = await fetchSharedLeads();
+          populateLogLeadSelect();
+          scheduleRenderOutreach();
+        } catch (err) {
+          console.warn('[Outreach] Realtime-Refresh fehlgeschlagen:', err);
+        }
+      });
+    });
+  } catch (err) {
+    handleOutreachLeadsError(err);
+    refreshOutreachLocalCaches();
+  }
+
   switchOutreachTab('log');
 
   document.getElementById('add-template-btn')?.addEventListener('click', () => openTemplateModal());
-  document.getElementById('add-log-btn')?.addEventListener('click', () => openLogModal());
+  document.getElementById('add-log-btn')?.addEventListener('click', () => {
+    openLogModal().catch(handleOutreachLeadsError);
+  });
   document.getElementById('template-form')?.addEventListener('submit', handleTemplateSubmit);
   document.getElementById('log-form')?.addEventListener('submit', handleLogSubmit);
 
@@ -2494,10 +2508,33 @@ function initOutreach() {
   renderOutreach();
 }
 
-function refreshOutreachCaches() {
+function handleOutreachLeadsError(err) {
+  const message = err?.message || 'Leads konnten nicht geladen werden.';
+  showOutreachLeadsError(message);
+  RawFans.showToast(message);
+}
+
+function showOutreachLeadsError(message) {
+  const el = document.getElementById('outreach-leads-error-banner');
+  if (!el) return;
+  if (!message) {
+    el.classList.add('hidden');
+    el.textContent = '';
+    return;
+  }
+  el.textContent = message;
+  el.classList.remove('hidden');
+}
+
+function refreshOutreachLocalCaches() {
   templatesCache = RawFans.getOutreachTemplates();
   outreachLogCache = RawFans.getOutreachLog();
-  leadsCacheOutreach = RawFans.getLeads();
+}
+
+async function refreshOutreachCaches() {
+  refreshOutreachLocalCaches();
+  leadsCacheOutreach = await fetchSharedLeads();
+  showOutreachLeadsError(null);
   populateLogLeadSelect();
   populateLogTemplateSelect();
 }
@@ -2853,7 +2890,9 @@ function renderLog() {
       <p>Logge deine erste gesendete DM.</p>
       <button class="btn btn-primary" id="empty-add-log">Eintrag loggen</button>
     </div></td></tr>`;
-    document.getElementById('empty-add-log')?.addEventListener('click', () => openLogModal());
+    document.getElementById('empty-add-log')?.addEventListener('click', () => {
+      openLogModal().catch(handleOutreachLeadsError);
+    });
     return;
   }
 
@@ -2944,7 +2983,7 @@ function confirmDeleteTemplate() {
   if (!templateToDeleteId) return;
   const items = templatesCache.filter((t) => t.id !== templateToDeleteId);
   RawFans.saveOutreachTemplates(items);
-  refreshOutreachCaches();
+  refreshOutreachLocalCaches();
   RawFans.closeModal('template-delete-modal');
   templateToDeleteId = null;
   scheduleRenderOutreach();
@@ -2973,7 +3012,8 @@ function handleTemplateSubmit(e) {
   }
 
   RawFans.saveOutreachTemplates(items);
-  refreshOutreachCaches();
+  refreshOutreachLocalCaches();
+  populateLogTemplateSelect();
   RawFans.closeModal('template-modal');
   resetTemplateForm();
   scheduleRenderOutreach();
@@ -3012,9 +3052,9 @@ function fillLogForm(entry = null, overrides = {}) {
   toggleCallFields();
 }
 
-function openLogModal(entry = null, overrides = {}) {
+async function openLogModal(entry = null, overrides = {}) {
   editingLogId = entry?.id || null;
-  refreshOutreachCaches();
+  await refreshOutreachCaches();
   document.getElementById('log-modal-title').textContent = entry
     ? 'Eintrag bearbeiten'
     : (overrides.leadId ? 'Follow-up loggen' : 'Outreach loggen');
@@ -3038,7 +3078,7 @@ function openQuickFollowUp(entryId) {
     nextAction: suggestedType === 'call_invite' ? 'wait' : 'followup2',
     followUpDate: followUpDate.toISOString(),
     callPlanned: RawFans.isCallMessageType(suggestedType),
-  });
+  }).catch(handleOutreachLeadsError);
 }
 
 function openLeadHistory(leadId) {
@@ -3113,7 +3153,7 @@ function openLeadHistory(leadId) {
       RawFans.closeModal('lead-history-modal');
       const last = thread[thread.length - 1];
       if (last) openQuickFollowUp(last.id);
-      else openLogModal(null, { leadId });
+      else openLogModal(null, { leadId }).catch(handleOutreachLeadsError);
     };
   }
 
@@ -3122,7 +3162,7 @@ function openLeadHistory(leadId) {
 
 function editLog(id) {
   const entry = outreachLogCache.find((e) => e.id === id);
-  if (entry) openLogModal(entry);
+  if (entry) openLogModal(entry).catch(handleOutreachLeadsError);
 }
 
 function openDeleteLogModal(id) {
@@ -3138,7 +3178,7 @@ function confirmDeleteLog() {
   if (!logToDeleteId) return;
   const items = outreachLogCache.filter((e) => e.id !== logToDeleteId);
   RawFans.saveOutreachLog(items);
-  refreshOutreachCaches();
+  refreshOutreachLocalCaches();
   RawFans.closeModal('log-delete-modal');
   RawFans.closeModal('log-modal');
   logToDeleteId = null;
@@ -3192,7 +3232,7 @@ function handleLogSubmit(e) {
   }
 
   RawFans.saveOutreachLog(items);
-  refreshOutreachCaches();
+  refreshOutreachLocalCaches();
   RawFans.closeModal('log-modal');
   resetLogForm();
   scheduleRenderOutreach();

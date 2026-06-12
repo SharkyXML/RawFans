@@ -21,18 +21,20 @@ CREATE TABLE IF NOT EXISTS public.leads (
 CREATE INDEX IF NOT EXISTS leads_date_idx ON public.leads (date DESC);
 CREATE INDEX IF NOT EXISTS leads_status_idx ON public.leads (status);
 
--- Row Level Security (internes Tool — offene Policies für anon Key)
+-- Row Level Security (internes Tool — offene Policy für anon Key)
 ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow all for now" ON public.leads;
 DROP POLICY IF EXISTS "leads_select_anon" ON public.leads;
 DROP POLICY IF EXISTS "leads_insert_anon" ON public.leads;
 DROP POLICY IF EXISTS "leads_update_anon" ON public.leads;
 DROP POLICY IF EXISTS "leads_delete_anon" ON public.leads;
 
-CREATE POLICY "leads_select_anon" ON public.leads FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "leads_insert_anon" ON public.leads FOR INSERT TO anon, authenticated WITH CHECK (true);
-CREATE POLICY "leads_update_anon" ON public.leads FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "leads_delete_anon" ON public.leads FOR DELETE TO anon, authenticated USING (true);
+CREATE POLICY "Allow all for now"
+ON public.leads
+FOR ALL
+USING (true)
+WITH CHECK (true);
 
 -- Realtime aktivieren (Dashboard → Database → Replication → leads aktivieren)
 -- Oder per SQL:

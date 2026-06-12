@@ -149,6 +149,8 @@
 
       <main class="page-content dashboard-page">
 
+        <div class="leads-error-banner hidden" id="dashboard-error-banner" role="alert"></div>
+
         <!-- Stats -->
         <div class="stats-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6 md:mb-8">
           <div class="stat-card">
@@ -243,7 +245,9 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/main.js"></script>
-  <script>initDashboard();</script>
+  <script>initDashboard().catch((err) => console.error(err));</script>
 </body>
 </html>
