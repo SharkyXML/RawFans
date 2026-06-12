@@ -1,8 +1,7 @@
 /**
  * RawFans — Supabase Leads API (ES Module)
- *
- * Client wird genau einmal als `supabaseClient` initialisiert — nie `supabase` deklarieren,
- * da die Library global ebenfalls `supabase` nutzen kann.
+ * Entspricht dem offiziellen Supabase-Muster (createClient + from/select).
+ * Statisches Hosting: URL/Key statt process.env.
  */
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
@@ -14,13 +13,18 @@ const LEADS_TABLE = 'leads';
 const LOCAL_STORAGE_KEY = 'rawfans_leads';
 const MIGRATION_FLAG_KEY = 'rawfans_leads_supabase_migrated';
 
-/** Einzige Client-Instanz im gesamten Projekt */
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let realtimeChannel = null;
 let onRealtimeChange = null;
 
 console.info('[Supabase] Client initialisiert:', SUPABASE_URL);
+
+// Verbindungstest (Supabase-Empfehlung)
+supabase.from(LEADS_TABLE).select('id').limit(1).then(({ data, error }) => {
+  if (error) console.error('[Supabase] Verbindungstest fehlgeschlagen:', error.message);
+  else console.info('[Supabase] Verbindung OK —', data?.length ?? 0, 'Zeile(n) erreichbar');
+});
 
 function handleError(error, context) {
   const message = error?.message || 'Unbekannter Fehler';
@@ -101,7 +105,7 @@ function leadToRow(lead) {
 export async function fetchLeads() {
   console.info('[Supabase] fetchLeads()…');
 
-  const { data, error } = await supabaseClient
+  const { data, error } = await supabase
     .from(LEADS_TABLE)
     .select('*')
     .order('created_at', { ascending: false });
@@ -133,7 +137,7 @@ export async function addLead(leadData, options = {}) {
 
   console.info('[Supabase] addLead():', row.username);
 
-  const { data, error } = await supabaseClient.from(LEADS_TABLE).insert(row).select().single();
+  const { data, error } = await supabase.from(LEADS_TABLE).insert(row).select().single();
 
   if (error) handleError(error, 'Lead anlegen fehlgeschlagen');
   return rowToLead(data);
@@ -148,7 +152,7 @@ export async function updateLead(id, leadData) {
 
   console.info('[Supabase] updateLead():', id);
 
-  const { data, error } = await supabaseClient
+  const { data, error } = await supabase
     .from(LEADS_TABLE)
     .update(row)
     .eq('id', id)
@@ -163,7 +167,7 @@ export async function updateLead(id, leadData) {
 export async function deleteLead(id) {
   console.info('[Supabase] deleteLead():', id);
 
-  const { error } = await supabaseClient.from(LEADS_TABLE).delete().eq('id', id);
+  const { error } = await supabase.from(LEADS_TABLE).delete().eq('id', id);
 
   if (error) handleError(error, 'Lead löschen fehlgeschlagen');
   return true;
@@ -234,7 +238,7 @@ export async function importFromLocalStorage() {
 export function subscribeToLeads(callback) {
   onRealtimeChange = callback;
 
-  realtimeChannel = supabaseClient
+  realtimeChannel = supabase
     .channel('rawfans-leads-realtime')
     .on('postgres_changes', { event: '*', schema: 'public', table: LEADS_TABLE }, () => {
       console.info('[Supabase] Realtime-Update empfangen');
@@ -248,7 +252,7 @@ export function subscribeToLeads(callback) {
 
 export function unsubscribeFromLeads() {
   if (realtimeChannel) {
-    supabaseClient.removeChannel(realtimeChannel);
+    supabase.removeChannel(realtimeChannel);
     realtimeChannel = null;
   }
   onRealtimeChange = null;
