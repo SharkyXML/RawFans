@@ -1170,20 +1170,33 @@ let editingLeadId = null;
 let leadToDeleteId = null;
 let leadsCache = [];
 let renderScheduled = false;
+let leadsLoading = false;
+let leadsSaving = false;
+let leadsRealtimeRefreshScheduled = false;
 
-function initLeads() {
-  RawFans.seedData();
+/** Leads-Seite initialisieren (Supabase) */
+async function initLeads() {
   RawFans.initShell('leads');
   RawFans.initModal('lead-modal', { onClose: resetLeadForm });
   RawFans.initModal('lead-delete-modal', { onClose: resetDeleteLeadState });
 
-  document.getElementById('lead-delete-confirm')?.addEventListener('click', confirmDeleteLead);
-
-  leadsCache = RawFans.getLeads();
+  document.getElementById('lead-delete-confirm')?.addEventListener('click', () => {
+    confirmDeleteLead().catch(handleLeadsError);
+  });
 
   document.getElementById('add-lead-btn')?.addEventListener('click', () => openLeadModal());
   document.getElementById('empty-add-lead-main')?.addEventListener('click', () => openLeadModal());
-  document.getElementById('lead-form')?.addEventListener('submit', handleLeadSubmit);
+  document.getElementById('lead-form')?.addEventListener('submit', (e) => {
+    handleLeadSubmit(e).catch(handleLeadsError);
+  });
+
+  document.getElementById('leads-migration-import')?.addEventListener('click', () => {
+    runLeadsMigration().catch(handleLeadsError);
+  });
+
+  document.getElementById('leads-migration-dismiss')?.addEventListener('click', () => {
+    document.getElementById('leads-migration-banner')?.classList.add('hidden');
+  });
 
   const attractSlider = document.getElementById('lead-attract');
   const attractValue = document.getElementById('lead-attract-value');
@@ -1224,7 +1237,126 @@ function initLeads() {
     if (deleteBtn) openDeleteLeadModal(deleteBtn.dataset.delete);
   });
 
-  renderLeadsTable();
+  window.addEventListener('beforeunload', () => RawFansLeadsDB.unsubscribeFromLeads());
+
+  setLeadsLoading(true);
+  showLeadsError(null);
+
+  try {
+    if (!window.RawFansLeadsDB) {
+      throw new Error('Supabase Client nicht geladen. Bitte assets/js/supabase-client.js prüfen.');
+    }
+    await loadLeadsFromSupabase();
+
+    RawFansLeadsDB.subscribeToLeads(() => {
+      if (leadsRealtimeRefreshScheduled) return;
+      leadsRealtimeRefreshScheduled = true;
+      requestAnimationFrame(async () => {
+        leadsRealtimeRefreshScheduled = false;
+        try {
+          await loadLeadsFromSupabase({ silent: true });
+        } catch (err) {
+          console.warn('[Leads] Realtime-Refresh fehlgeschlagen:', err);
+        }
+      });
+    });
+
+    updateLeadsMigrationBanner();
+  } catch (err) {
+    handleLeadsError(err);
+    renderLeadsTable();
+  } finally {
+    setLeadsLoading(false);
+  }
+}
+
+function handleLeadsError(err) {
+  const message = err?.message || 'Ein unerwarteter Fehler ist aufgetreten.';
+  showLeadsError(message);
+  RawFans.showToast(message);
+}
+
+function showLeadsError(message) {
+  const el = document.getElementById('leads-error-banner');
+  if (!el) return;
+  if (!message) {
+    el.classList.add('hidden');
+    el.textContent = '';
+    return;
+  }
+  el.textContent = message;
+  el.classList.remove('hidden');
+}
+
+function setLeadsLoading(isLoading) {
+  leadsLoading = isLoading;
+  const overlay = document.getElementById('leads-loading-overlay');
+  overlay?.classList.toggle('hidden', !isLoading);
+  document.getElementById('add-lead-btn')?.toggleAttribute('disabled', isLoading || leadsSaving);
+}
+
+function setLeadsSaving(isSaving) {
+  leadsSaving = isSaving;
+  const submitBtn = document.querySelector('#lead-form button[type="submit"]');
+  const deleteBtn = document.getElementById('lead-delete-confirm');
+  submitBtn?.toggleAttribute('disabled', isSaving);
+  deleteBtn?.toggleAttribute('disabled', isSaving);
+  document.getElementById('add-lead-btn')?.toggleAttribute('disabled', isSaving || leadsLoading);
+  if (submitBtn) submitBtn.textContent = isSaving ? 'Speichern…' : 'Speichern';
+}
+
+async function loadLeadsFromSupabase({ silent = false } = {}) {
+  if (!silent) setLeadsLoading(true);
+  try {
+    leadsCache = await RawFansLeadsDB.fetchLeads();
+    renderLeadsTable();
+    updateLeadsMigrationBanner();
+  } finally {
+    if (!silent) setLeadsLoading(false);
+  }
+}
+
+function updateLeadsMigrationBanner() {
+  const banner = document.getElementById('leads-migration-banner');
+  const countEl = document.getElementById('leads-migration-count');
+  if (!banner) return;
+
+  const localCount = RawFansLeadsDB.getLocalStorageLeadCount();
+  if (localCount === 0) {
+    banner.classList.add('hidden');
+    return;
+  }
+
+  if (countEl) countEl.textContent = String(localCount);
+  banner.classList.remove('hidden');
+}
+
+async function runLeadsMigration() {
+  const btn = document.getElementById('leads-migration-import');
+  btn?.setAttribute('disabled', 'true');
+  if (btn) btn.textContent = 'Importiere…';
+
+  try {
+    const result = await RawFansLeadsDB.importFromLocalStorage();
+    await loadLeadsFromSupabase();
+
+    if (result.imported > 0) {
+      RawFans.showToast(`${result.imported} Lead${result.imported === 1 ? '' : 's'} importiert`);
+    } else if (result.alreadyMigrated) {
+      RawFans.showToast('Daten wurden bereits importiert');
+    } else {
+      RawFans.showToast('Keine lokalen Daten zum Importieren');
+    }
+
+    if (result.skipped > 0) {
+      RawFans.showToast(`${result.skipped} Einträge übersprungen (Duplikate/Fehler)`);
+    }
+
+    document.getElementById('leads-migration-banner')?.classList.add('hidden');
+  } finally {
+    btn?.removeAttribute('disabled');
+    if (btn) btn.textContent = 'Alte Leads aus localStorage in Supabase importieren';
+  }
 }
 
 function scheduleRenderLeadsTable() {
@@ -1236,8 +1368,8 @@ function scheduleRenderLeadsTable() {
   });
 }
 
-function refreshLeadsCache() {
-  leadsCache = RawFans.getLeads();
+async function refreshLeadsCache() {
+  leadsCache = await RawFansLeadsDB.fetchLeads();
 }
 
 function getFilteredLeads() {
@@ -1329,6 +1461,24 @@ function renderLeadsTable() {
 
   renderLeadsStats();
 
+  if (leadsLoading && total === 0) {
+    emptyPanel?.classList.add('hidden');
+    tableCard?.classList.remove('hidden');
+    controlBar?.classList.remove('hidden');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="10">
+            <div class="leads-loading-state">
+              <div class="leads-loading-spinner"></div>
+              <p>Leads werden geladen…</p>
+            </div>
+          </td>
+        </tr>`;
+    }
+    return;
+  }
+
   const isCompletelyEmpty = total === 0;
   emptyPanel?.classList.toggle('hidden', !isCompletelyEmpty);
   tableCard?.classList.toggle('hidden', isCompletelyEmpty);
@@ -1413,16 +1563,19 @@ function openDeleteLeadModal(id) {
   RawFans.openModal('lead-delete-modal');
 }
 
-function confirmDeleteLead() {
+async function confirmDeleteLead() {
   if (!leadToDeleteId) return;
 
-  const leads = leadsCache.filter((l) => l.id !== leadToDeleteId);
-  RawFans.saveLeads(leads);
-  refreshLeadsCache();
-
-  RawFans.closeModal('lead-delete-modal');
-  resetDeleteLeadState();
-  scheduleRenderLeadsTable();
+  setLeadsSaving(true);
+  try {
+    await RawFansLeadsDB.deleteLead(leadToDeleteId);
+    await loadLeadsFromSupabase({ silent: true });
+    RawFans.closeModal('lead-delete-modal');
+    resetDeleteLeadState();
+    RawFans.showToast('Lead gelöscht');
+  } finally {
+    setLeadsSaving(false);
+  }
 }
 
 function resetDeleteLeadState() {
@@ -1437,10 +1590,9 @@ function resetLeadForm() {
   if (attractValue) attractValue.textContent = '5';
 }
 
-function handleLeadSubmit(e) {
+async function handleLeadSubmit(e) {
   e.preventDefault();
   const form = e.target;
-  const leads = [...leadsCache];
 
   const leadData = {
     date: new Date(form.date.value).toISOString(),
@@ -1454,24 +1606,22 @@ function handleLeadSubmit(e) {
     notes: form.notes.value.trim(),
   };
 
-  if (editingLeadId) {
-    const index = leads.findIndex((l) => l.id === editingLeadId);
-    if (index !== -1) {
-      leads[index] = { ...leads[index], ...leadData };
+  setLeadsSaving(true);
+  try {
+    if (editingLeadId) {
+      await RawFansLeadsDB.updateLead(editingLeadId, leadData);
+      RawFans.showToast('Lead aktualisiert');
+    } else {
+      await RawFansLeadsDB.addLead(leadData);
+      RawFans.showToast('Lead angelegt');
     }
-  } else {
-    leads.unshift({
-      id: RawFans.generateId(),
-      ...leadData,
-      createdAt: new Date().toISOString(),
-    });
-  }
 
-  RawFans.saveLeads(leads);
-  refreshLeadsCache();
-  RawFans.closeModal('lead-modal');
-  resetLeadForm();
-  scheduleRenderLeadsTable();
+    await loadLeadsFromSupabase({ silent: true });
+    RawFans.closeModal('lead-modal');
+    resetLeadForm();
+  } finally {
+    setLeadsSaving(false);
+  }
 }
 
 /* ── Page: Content Hub ───────────────────────────────────── */
