@@ -10,7 +10,7 @@ import {
   getLocalStorageLeadCount,
   subscribeToLeads,
   unsubscribeFromLeads,
-} from './supabase-client.js';
+} from './supabase-client.js?v=20260612c';
 
 window.RawFansLeadsDB = {
   fetchLeads,
